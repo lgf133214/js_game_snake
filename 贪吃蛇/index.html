@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ch">
+<head>
+    <meta charset="UTF-8">
+    <title>贪吃蛇</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            font-family: 'Lato', sans-serif;
+        }
+
+        #container {
+            width: 800px;
+            height: 600px;
+            background-color: lightgray;
+            margin: 100px auto 0;
+            position: relative;
+        }
+
+        .info {
+            text-align: center;
+        }
+
+        .button {
+            width: 80px;
+            height: 30px;
+        }
+    </style>
+</head>
+<body>
+<div id="container"></div>
+<div class="info">
+    自定义数据
+    <br>
+    <br>
+    宽度：<input type="range" min="400" max="1200" step="100" value="800" id="width" title="400-1200">
+    高度：<input type="range" min="400" max="800" step="100" value="600" id="height" title="400-800">
+    <br>
+    <br>
+    速度：<input type="range" min="50" max="250" step="50" value="150" id="speed">
+    <br>
+    <br>
+    <input type="button" value="刷新" title="改变宽/高后点击" class="button" id="submit">
+    &nbsp;&nbsp;
+    <input type="button" value="开始/暂停" title="开始/暂停" class="button" id="stat">
+</div>
+</body>
+<script>
+    function food(options) {
+        // 可选择传参
+        options = options || {};
+        // 属性初始化
+        this.map = document.getElementById("container");
+        this.height = options.height || 20;
+        this.width = options.width || 20;
+        this.color = options.color || 'red';
+        // 创建div，初始化
+        this.body = this.map.appendChild(document.createElement("div"));
+        this.body.style.position = 'absolute';
+        this.body.style.width = this.width + 'px';
+        this.body.style.height = this.height + 'px';
+        // 颜色可选择随机更改，移到show函数
+        this.body.style.backgroundColor = this.color;
+        // 位置刷新
+        this.show = function () {
+            this.body.style.left = Math.floor(this.map.offsetWidth / this.width * Math.random()) * this.width + 'px';
+            this.body.style.top = Math.floor(this.map.offsetHeight / this.height * Math.random()) * this.height + 'px';
+        };
+    }
+
+    function snake(options) {
+        // 为了在下面的函数中使用this
+        snake_obj = this;
+        // 属性初始化
+        options = options || {};
+        this.options = options;
+        this.width = options.width || 20;
+        this.height = options.height || 20;
+        this.direction = options.direction || 'right';
+        // 存储蛇节信息，x， y，color，div->this.show中需要用到
+        this.body = [
+            {x: 2, y: 5, color: 'red'},
+            {x: 1, y: 5, color: 'gray'},
+            {x: 0, y: 5, color: 'gray'},
+        ];
+        this.map = document.getElementById("container");
+        // 蛇节更新方法
+        this.show = function () {
+            for (let i = 0; i < this.body.length; i++) {
+                let obj = this.body[i];
+                let div = obj.div || document.createElement('div');
+                this.map.appendChild(div);
+                div.style.position = 'absolute';
+                div.style.backgroundColor = obj.color;
+                div.style.width = this.width + 'px';
+                div.style.height = this.height + 'px';
+                div.style.left = obj.x * this.width + 'px';
+                div.style.top = obj.y * this.height + 'px';
+                obj.div = div;
+            }
+        };
+        // 移动
+        this.move = function () {
+            if (isEatable()) {
+                var tmp = {};
+                // 长度加一
+                // 变量接收最后一节
+                tmp.x = this.body[this.body.length - 1].x;
+                tmp.y = this.body[this.body.length - 1].y;
+                tmp.color = this.body[this.body.length - 1].color;
+            }
+            for (let i = this.body.length - 1; i > 0; i--) {
+                this.body[i].x = this.body[i - 1].x;
+                this.body[i].y = this.body[i - 1].y;
+            }
+            let head = this.body[0];
+            switch (this.direction) {
+                case "right":
+                    head.x += 1;
+                    break;
+                case "left":
+                    head.x -= 1;
+                    break;
+                case "top":
+                    head.y -= 1;
+                    break;
+                case "down":
+                    head.y += 1;
+                    break;
+            }
+            isOver = function () {
+                if (head.x < 0 || head.x >= snake_obj.map.offsetWidth / snake_obj.width || head.y < 0 || head.y >= snake_obj.map.offsetHeight / snake_obj.height)
+                    return true;
+                var tmp = new Set();
+                for (let i = 0; i < snake_obj.body.length; i++) {
+                    if (tmp.has(snake_obj.body[i].x.toString() + ',' + snake_obj.body[i].y.toString())) {
+                        return true;
+                    }
+                    tmp.add(snake_obj.body[i].x.toString() + ',' + snake_obj.body[i].y.toString());
+                }
+                return false
+            };
+            if (isOver()) {
+                // 越界
+                window.location.reload();
+                alert("GameOver!");
+            } else {
+                if (tmp) {
+                    this.body.push(tmp);
+                    this.options.food.show();
+                }
+                this.show();
+            }
+        };
+        // 筛选可转方向，任意方向都有三个
+        isChangeable = function (direction) {
+            let directions = ['left', 'right', 'top', 'down'];
+            if (snake_obj.body[1].x + 1 === snake_obj.body[0].x) {
+                directions.splice(0, 1)
+            } else if (snake_obj.body[1].x - 1 === snake_obj.body[0].x) {
+                directions.splice(1, 1)
+            } else if (snake_obj.body[1].y - 1 === snake_obj.body[0].y) {
+                directions.splice(3, 1)
+            } else if (snake_obj.body[1].y + 1 === snake_obj.body[0].y) {
+                directions.splice(2, 1)
+            } else {
+                return -1
+            }
+            return directions.indexOf(direction)
+        };
+        // 监听键盘输入
+        document.addEventListener("keydown", function (e) {
+            switch (e.keyCode) {
+                case 37:
+                    if (isChangeable('left') !== -1)
+                        snake_obj.direction = 'left';
+                    break;
+                case 38:
+                    if (isChangeable('top') !== -1)
+                        snake_obj.direction = 'top';
+                    break;
+                case 39:
+                    if (isChangeable('right') !== -1)
+                        snake_obj.direction = 'right';
+                    break;
+                case 40:
+                    if (isChangeable('down') !== -1)
+                        snake_obj.direction = 'down';
+                    break;
+                case 32:
+                    document.getElementById("speed").click();
+                    break;
+            }
+        }, false);
+
+        isEatable = function () {
+            if (['right', 'left'].indexOf(snake_obj.direction) !== -1) {
+                if (snake_obj.body[0].div.offsetTop === snake_obj.options.food.body.offsetTop) {
+                    // 如果方向是水平的
+                    if (Math.abs(snake_obj.body[0].div.offsetLeft - snake_obj.options.food.body.offsetLeft) === snake_obj.width) {
+                        // 长度加一
+                        return true
+                    }
+                }
+
+            } else if (['top', 'down'].indexOf(snake_obj.direction) !== -1) {
+
+                if (snake_obj.body[0].div.offsetLeft === snake_obj.options.food.body.offsetLeft) {
+                    if (Math.abs(snake_obj.body[0].div.offsetTop - snake_obj.options.food.body.offsetTop) === snake_obj.width) {
+                        // +1
+                        return true
+                    }
+                }
+            }
+            return false
+        }
+    }
+
+    function game() {
+        let s = new snake();
+        let f = new food();
+        s.options.food = f;
+        f.show();
+        s.show();
+        this.main = function () {
+            s.move()
+        }
+    }
+
+    let timer;
+    let g = new game();
+    let stat = document.getElementById("stat");
+    let speed = document.getElementById("speed");
+    stat.onclick = function (ev) {
+        if (!timer) {
+            timer = setInterval(function () {
+                g.main();
+            }, speed.value)
+        } else {
+            clearInterval(timer);
+            timer = 0;
+        }
+    };
+    let submit = document.getElementById("submit");
+    submit.onclick = function (ev) {
+        let width = document.getElementById("width").value;
+        let height = document.getElementById("height").value;
+        let container = document.getElementById("container");
+        if (container.offsetWidth !== width || container !== height) {
+            while (container.hasChildNodes()) {
+                container.removeChild(container.lastChild)
+            }
+            container.style.width = width + 'px';
+            container.style.height = height + 'px';
+
+            g = new game();
+        }
+    };
+
+</script>
+</html>
