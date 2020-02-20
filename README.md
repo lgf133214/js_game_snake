@@ -9,4 +9,4 @@ js贪吃蛇简易实现
 - 另：食物生成理论上应该排除身体的占位，但概率不是很大，没有实现
 #### 入门学习使用，GitHub备份
 
-[https://lgf133214.github.io/js_game_snake/%E8%B4%AA%E5%90%83%E8%9B%87/]()
+[点击展示](https://lgf133214.github.io/js_game_snake/%E8%B4%AA%E5%90%83%E8%9B%87/ "贪吃蛇")
