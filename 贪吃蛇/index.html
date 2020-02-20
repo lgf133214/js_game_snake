@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>贪吃蛇</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
-     <script>
+    <script>
         /**
          * @return {boolean}
          */
@@ -22,7 +22,8 @@
             }
             return flag;
         }
-        if (！IsPC()){
+
+        if (!IsPC()) {
             alert("当前支支持pc端使用");
             window.stop();
         }
@@ -38,7 +39,7 @@
             width: 800px;
             height: 600px;
             background-color: lightgray;
-            margin: 100px auto 0;
+            margin: 0 auto;
             position: relative;
         }
 
@@ -58,11 +59,11 @@
     自定义数据
     <br>
     <br>
-    宽度：<input type="range" min="400" max="1200" step="100" value="800" id="width" title="400-1200">
-    高度：<input type="range" min="400" max="800" step="100" value="600" id="height" title="400-800">
+    宽度：<input type="range" min="200" max="1200" step="100" value="800" id="width" title="200-1200">
+    高度：<input type="range" min="200" max="1200" step="100" value="400" id="height" title="200-1200">
     <br>
     <br>
-    速度：<input type="range" min="50" max="250" step="50" value="150" id="speed">
+    速度：<input type="range" min="50" max="250" step="50" value="150" id="speed" title="快---慢">
     <br>
     <br>
     <input type="button" value="刷新" title="改变宽/高后点击" class="button" id="submit">
@@ -167,7 +168,13 @@
             };
             if (isOver()) {
                 // 越界
-                window.location.reload();
+                let container = document.getElementById("container");
+                while (container.hasChildNodes()) {
+                    container.removeChild(container.lastChild)
+                }
+                window.clearInterval(timer);
+                timer = 0;
+                g = new game();
                 alert("GameOver!");
             } else {
                 if (tmp) {
@@ -212,9 +219,6 @@
                     if (isChangeable('down') !== -1)
                         snake_obj.direction = 'down';
                     break;
-                case 32:
-                    document.getElementById("speed").click();
-                    break;
             }
         }, false);
 
@@ -227,9 +231,7 @@
                         return true
                     }
                 }
-
             } else if (['top', 'down'].indexOf(snake_obj.direction) !== -1) {
-
                 if (snake_obj.body[0].div.offsetLeft === snake_obj.options.food.body.offsetLeft) {
                     if (Math.abs(snake_obj.body[0].div.offsetTop - snake_obj.options.food.body.offsetTop) === snake_obj.width) {
                         // +1
@@ -251,7 +253,7 @@
             s.move()
         }
     }
-
+    // 开始/暂停
     let timer;
     let g = new game();
     let stat = document.getElementById("stat");
@@ -266,6 +268,7 @@
             timer = 0;
         }
     };
+    // 刷新container
     let submit = document.getElementById("submit");
     submit.onclick = function (ev) {
         let width = document.getElementById("width").value;
@@ -277,10 +280,18 @@
             }
             container.style.width = width + 'px';
             container.style.height = height + 'px';
-
+            window.clearInterval(timer);
+            timer = 0;
             g = new game();
         }
     };
+    // 全局暂停
+    window.onkeydown = function (ev) {
+        if (ev.keyCode === 32) {
+            document.getElementById("stat").click();
+            return true
+        }
+    }
 
 </script>
 </html>
