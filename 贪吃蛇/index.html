@@ -4,6 +4,29 @@
     <meta charset="UTF-8">
     <title>贪吃蛇</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+     <script>
+        /**
+         * @return {boolean}
+         */
+        function IsPC() {
+            var userAgentInfo = navigator.userAgent;
+            var Agents = ["Android", "iPhone",
+                "SymbianOS", "Windows Phone",
+                "iPad", "iPod"];
+            var flag = true;
+            for (var v = 0; v < Agents.length; v++) {
+                if (userAgentInfo.indexOf(Agents[v]) > 0) {
+                    flag = false;
+                    break;
+                }
+            }
+            return flag;
+        }
+        if (IsPC()){
+            alert("当前支支持pc端使用");
+            window.stop();
+        }
+    </script>
     <style>
         * {
             margin: 0;
